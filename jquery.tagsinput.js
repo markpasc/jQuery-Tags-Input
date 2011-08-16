@@ -88,16 +88,10 @@
             var id = $(this).attr('id');
 
             var old = $(this).val().split(delimiter[id]);
-
-            $('#' + id + '_tagsinput .tag').remove();
-            var str = '';
-            for (var i = 0; i < old.length; i++) {
-                if (old[i] != value) {
-                    str = str + delimiter[id] + old[i];
-                }
-            }
-
-            $.fn.tagsInput.importTags(this, str);
+            var str = $.grep(old, function (tag, i) {
+                return tag != value;
+            });
+            $(this).importTags(str);
 
             if (tags_callbacks[id] && tags_callbacks[id]['onRemoveTag']) {
                 var f = tags_callbacks[id]['onRemoveTag'];
@@ -279,15 +273,16 @@
     };
 
     $.fn.tagsInput.importTags = function (obj, val) {
-        $(obj).val('');
+        var $obj = $(obj);
+        $obj.val('');
         var id = $(obj).attr('id');
         var tags = val.split(delimiter[id]);
-        for (var i = 0; i < tags.length; i++) {
-            $(obj).addTag(tags[i],{
+        $.each(tags, function (i, tag) {
+            $obj.addTag(tag, {
                 focus: false,
                 callback: false
             });
-        }
+        });
         if (tags_callbacks[id] && tags_callbacks[id]['onChange']) {
             var f = tags_callbacks[id]['onChange'];
             f(obj, tags[i]);
