@@ -17,7 +17,6 @@
 (function ($) {
 
     var delimiter = new Array();
-    var tags_callbacks = new Array();
 
     $.fn.addTag = function (value, options) {
         var options = $.extend({
@@ -61,17 +60,10 @@
                 $('#' + id + '_tag').blur();
             }
 
-            if (options.callback && tags_callbacks[id] && tags_callbacks[id]['onAddTag']) {
-                var f = tags_callbacks[id]['onAddTag'];
-                f(value);
+            if (options.callback) {
+                $(this).trigger('addTag', [value]);
             }
-
-            if(tags_callbacks[id] && tags_callbacks[id]['onChange']) {
-                var i = tagslist.length;
-                var f = tags_callbacks[id]['onChange'];
-                f($(this), tagslist[i]);
-            }
-
+            $(this).trigger('changeTag', [value]);
             $.fn.tagsInput.updateTagsField(this, tagslist);
         });
 
@@ -89,10 +81,7 @@
             });
             $(this).importTags(str);
 
-            if (tags_callbacks[id] && tags_callbacks[id]['onRemoveTag']) {
-                var f = tags_callbacks[id]['onRemoveTag'];
-                f(value);
-            }
+            $(this).trigger('removeTag', [value]);
         });
         return false;
     };
@@ -144,11 +133,14 @@
 
             delimiter[id] = data.delimiter;
 
-            if (settings.onAddTag || settings.onRemoveTag || settings.onChange) {
-                tags_callbacks[id] = new Array();
-                tags_callbacks[id]['onAddTag'] = settings.onAddTag;
-                tags_callbacks[id]['onRemoveTag'] = settings.onRemoveTag;
-                tags_callbacks[id]['onChange'] = settings.onChange;
+            if (settings.onAddTag) {
+                $(this).bind('addTag', settings.onAddTag);
+            }
+            if (settings.onRemoveTag) {
+                $(this).bind('removeTag', settings.onRemoveTag);
+            }
+            if (settings.onChange) {
+                $(this).bind('changeTag', settings.onChange);
             }
 
             var markup = '<div id="' + id + '_tagsinput" class="tagsinput"><div id="' + id + '_addTag">';
@@ -279,10 +271,6 @@
                 callback: false
             });
         });
-        if (tags_callbacks[id] && tags_callbacks[id]['onChange']) {
-            var f = tags_callbacks[id]['onChange'];
-            f(obj, tags[i]);
-        }
     };
 
 })(jQuery);
