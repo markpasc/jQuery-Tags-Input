@@ -266,7 +266,7 @@
                 $(data.fake_input).blur();
             }
 
-            return false;
+            return true;
         });
 
         return this;
