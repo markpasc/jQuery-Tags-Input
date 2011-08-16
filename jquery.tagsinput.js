@@ -20,12 +20,12 @@
     var tags_callbacks = new Array();
 
     $.fn.addTag = function (value, options) {
-        var options = jQuery.extend({
+        var options = $.extend({
             focus: false,
             callback: true
         }, options);
 
-        value = jQuery.trim(value);
+        value = $.trim(value);
 
         this.each(function () {
             var id = $(this).attr('id');
@@ -102,7 +102,7 @@
     };
 
     $.fn.tagExist = function (val) {
-        if (jQuery.inArray(val, $(this)) == -1) {
+        if ($.inArray(val, $(this)) == -1) {
             return false; /* Cannot find value in array */
         } else {
             return true; /* Value found */
@@ -117,7 +117,7 @@
     }
 
     $.fn.tagsInput = function (options) {
-        var settings = jQuery.extend({
+        var settings = $.extend({
             interactive: true,
             defaultText: 'add a tag',
             minChars: 0,
@@ -138,7 +138,7 @@
 
             var id = $(this).attr('id');
 
-            var data = jQuery.extend({
+            var data = $.extend({
                 pid: id,
                 real_input: '#' + id,
                 holder: '#' + id + '_tagsinput',
@@ -193,7 +193,7 @@
                         autocomplete_options[attrname] = settings.autocomplete[attrname];
                     }
 
-                    if (jQuery.Autocompleter !== undefined) {
+                    if ($.Autocompleter !== undefined) {
                         $(data.fake_input).autocomplete(settings.autocomplete_url, settings.autocomplete);
                         $(data.fake_input).bind('result', data, function (event, data, formatted) {
                             if (data) {
@@ -202,7 +202,7 @@
                             }
                         });
                     }
-                    else if (jQuery.ui.autocomplete !== undefined) {
+                    else if ($.ui.autocomplete !== undefined) {
                         $(data.fake_input).autocomplete(autocomplete_options);
                         $(data.fake_input).bind('autocompleteselect', data, function (event, ui) {
                             $(event.data.real_input).addTag(ui.item.value, {
