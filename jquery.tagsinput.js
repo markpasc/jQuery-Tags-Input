@@ -35,45 +35,41 @@
                 tagslist = new Array();
             }
 
-            if (options.unique) {
-                skipTag = $(tagslist).tagExist(value);
+            var skipTag = options.unique ? $(tagslist).tagExist(value) : false;
+            if (value == '' || skipTag) {
+                return true;
+            }
+
+            $('<span>').addClass('tag').append(
+                $('<span>').text(value).append('&nbsp;&nbsp;'),
+                $('<a>', {
+                    href  : '#',
+                    title : 'Removing tag',
+                    text  : 'x'
+                }).click(function () {
+                    return $('#' + id).removeTag(escape(value));
+                })
+            ).insertBefore('#' + id + '_addTag');
+
+            tagslist.push(value);
+
+            $('#' + id + '_tag').val('');
+            if (options.focus) {
+                $('#' + id + '_tag').focus();
             }
             else {
-                skipTag = false;
+                $('#' + id + '_tag').blur();
             }
 
-            if (value != '' && skipTag != true) {
-                $('<span>').addClass('tag').append(
-                    $('<span>').text(value).append('&nbsp;&nbsp;'),
-                    $('<a>', {
-                        href  : '#',
-                        title : 'Removing tag',
-                        text  : 'x'
-                    }).click(function () {
-                        return $('#' + id).removeTag(escape(value));
-                    })
-                ).insertBefore('#' + id + '_addTag');
+            if (options.callback && tags_callbacks[id] && tags_callbacks[id]['onAddTag']) {
+                var f = tags_callbacks[id]['onAddTag'];
+                f(value);
+            }
 
-                tagslist.push(value);
-
-                $('#' + id + '_tag').val('');
-                if (options.focus) {
-                    $('#' + id + '_tag').focus();
-                }
-                else {
-                    $('#' + id + '_tag').blur();
-                }
-
-                if (options.callback && tags_callbacks[id] && tags_callbacks[id]['onAddTag']) {
-                    var f = tags_callbacks[id]['onAddTag'];
-                    f(value);
-                }
-
-                if(tags_callbacks[id] && tags_callbacks[id]['onChange']) {
-                    var i = tagslist.length;
-                    var f = tags_callbacks[id]['onChange'];
-                    f($(this), tagslist[i]);
-                }
+            if(tags_callbacks[id] && tags_callbacks[id]['onChange']) {
+                var i = tagslist.length;
+                var f = tags_callbacks[id]['onChange'];
+                f($(this), tagslist[i]);
             }
 
             $.fn.tagsInput.updateTagsField(this, tagslist);
