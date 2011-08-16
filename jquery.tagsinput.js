@@ -25,15 +25,15 @@
             callback: true
         }, options);
 
+        value = jQuery.trim(value);
+
         this.each(function () {
-            id = $(this).attr('id');
+            var id = $(this).attr('id');
 
             var tagslist = $(this).val().split(delimiter[id]);
             if (tagslist[0] == '') {
                 tagslist = new Array();
             }
-
-            value = jQuery.trim(value);
 
             if (options.unique) {
                 skipTag = $(tagslist).tagExist(value);
@@ -85,13 +85,13 @@
     $.fn.removeTag = function (value) {
         value = unescape(value);
         this.each(function () {
-            id = $(this).attr('id');
+            var id = $(this).attr('id');
 
             var old = $(this).val().split(delimiter[id]);
 
             $('#' + id + '_tagsinput .tag').remove();
-            str = '';
-            for (i = 0; i < old.length; i++) {
+            var str = '';
+            for (var i = 0; i < old.length; i++) {
                 if (old[i] != value) {
                     str = str + delimiter[id] + old[i];
                 }
@@ -117,6 +117,7 @@
 
     // clear all existing tags and import new ones from a string
     $.fn.importTags = function (str) {
+        var id = $(this).attr('id');
         $('#' + id + '_tagsinput .tag').remove();
         $.fn.tagsInput.importTags(this, str);
     }
@@ -141,9 +142,9 @@
                 $(this).hide();
             }
 
-            id = $(this).attr('id');
+            var id = $(this).attr('id');
 
-            data = jQuery.extend({
+            var data = jQuery.extend({
                 pid: id,
                 real_input: '#' + id,
                 holder: '#' + id + '_tagsinput',
@@ -273,15 +274,15 @@
     };
 
     $.fn.tagsInput.updateTagsField = function (obj, tagslist) {
-        id = $(obj).attr('id');
+        var id = $(obj).attr('id');
         $(obj).val(tagslist.join(delimiter[id]));
     };
 
     $.fn.tagsInput.importTags = function (obj, val) {
         $(obj).val('');
-        id = $(obj).attr('id');
+        var id = $(obj).attr('id');
         var tags = val.split(delimiter[id]);
-        for (i = 0; i < tags.length; i++) {
+        for (var i = 0; i < tags.length; i++) {
             $(obj).addTag(tags[i],{
                 focus: false,
                 callback: false
