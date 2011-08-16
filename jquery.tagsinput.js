@@ -122,16 +122,7 @@
             }
 
             var id = $(this).attr('id');
-
-            var data = $.extend({
-                pid: id,
-                real_input: '#' + id,
-                holder: '#' + id + '_tagsinput',
-                input_wrapper: '#' + id + '_addTag',
-                fake_input: '#' + id + '_tag'
-            }, settings);
-
-            delimiter[id] = data.delimiter;
+            delimiter[id] = settings.delimiter;
 
             if (settings.onAddTag) {
                 $(this).bind('addTag', settings.onAddTag);
@@ -143,116 +134,125 @@
                 $(this).bind('changeTag', settings.onChange);
             }
 
-            var markup = '<div id="' + id + '_tagsinput" class="tagsinput"><div id="' + id + '_addTag">';
-
-            if (settings.interactive) {
-                markup = markup + '<input id="' + id + '_tag" value="" data-default="' + settings.defaultText + '" />';
-            }
-
+            var holderId = id + '_tagsinput';
+            var markup = '<div id="' + holderId + '" class="tagsinput"><div id="' + id + '_addTag">';
             markup = markup + '</div><div class="tags_clear"></div></div>';
 
             $(markup).insertAfter(this);
 
-            $(data.holder).css('width', settings.width);
-            $(data.holder).css('height', settings.height);
+            $(holderId).css('width', settings.width);
+            $(holderId).css('height', settings.height);
 
-            if ($(data.real_input).val() != '') {
-                $.fn.tagsInput.importTags($(data.real_input), $(data.real_input).val());
+            if ($(this).val() != '') {
+                $.fn.tagsInput.importTags($(this), $(this).val());
             }
 
             if (settings.interactive) {
-                $(data.fake_input).val($(data.fake_input).attr('data-default'));
-                $(data.fake_input).css('color', settings.placeholderColor);
-
-                $(data.holder).bind('click', data, function (event) {
-                    $(event.data.fake_input).focus();
-                });
-
-                $(data.fake_input).bind('focus', data, function (event) {
-                    if ($(event.data.fake_input).val() == $(event.data.fake_input).attr('data-default')) {
-                        $(event.data.fake_input).val('');
-                    }
-                    $(event.data.fake_input).css('color', '#000000');
-                });
-
-                if (settings.autocomplete_url != undefined) {
-                    autocomplete_options = {source: settings.autocomplete_url};
-                    for (attrname in settings.autocomplete) {
-                        autocomplete_options[attrname] = settings.autocomplete[attrname];
-                    }
-
-                    if ($.Autocompleter !== undefined) {
-                        $(data.fake_input).autocomplete(settings.autocomplete_url, settings.autocomplete);
-                        $(data.fake_input).bind('result', data, function (event, data, formatted) {
-                            if (data) {
-                                d = data + "";
-                                $(event.data.real_input).addTag(d,{focus:true,unique:(settings.unique)});
-                            }
-                        });
-                    }
-                    else if ($.ui.autocomplete !== undefined) {
-                        $(data.fake_input).autocomplete(autocomplete_options);
-                        $(data.fake_input).bind('autocompleteselect', data, function (event, ui) {
-                            $(event.data.real_input).addTag(ui.item.value, {
-                                focus: true,
-                                unique: settings.unique
-                            });
-                            return false;
-                        });
-                    }
-                }
-                else {
-                    // if a user tabs out of the field, create a new tag
-                    // this is only available if autocomplete is not used.
-                    $(data.fake_input).bind('blur', data, function (event) {
-                        var d = $(this).attr('data-default');
-                        if ($(event.data.fake_input).val() != '' && $(event.data.fake_input).val() != d) {
-                            if( (event.data.minChars <= $(event.data.fake_input).val().length) && (!event.data.maxChars || (event.data.maxChars >= $(event.data.fake_input).val().length)) ) {
-                                $(event.data.real_input).addTag($(event.data.fake_input).val(), {
-                                    focus: true,
-                                    unique: settings.unique
-                                });
-                            }
-                        } else {
-                            $(event.data.fake_input).val($(event.data.fake_input).attr('data-default'));
-                            $(event.data.fake_input).css('color', settings.placeholderColor);
-                        }
-                        return false;
-                    });
-                }
-
-                // if user types a comma, create a new tag
-                $(data.fake_input).bind('keypress', data, function (event) {
-                    if (event.which == event.data.delimiter.charCodeAt(0) || event.which == 13 ) {
-                        if( (event.data.minChars <= $(event.data.fake_input).val().length) && (!event.data.maxChars || (event.data.maxChars >= $(event.data.fake_input).val().length)) ) {
-                            $(event.data.real_input).addTag($(event.data.fake_input).val(), {
-                                focus: true,
-                                unique: settings.unique
-                            });
-                        }
-                        return false;
-                    }
-                });
-
-                // Delete last tag on backspace
-                data.removeWithBackspace && $(data.fake_input).bind('keydown', function (event) {
-                    if(event.keyCode == 8 && $(this).val() == '') {
-                         event.preventDefault();
-                         var last_tag = $(this).closest('.tagsinput').find('.tag:last').text();
-                         var id = $(this).attr('id').replace(/_tag$/, '');
-                         last_tag = last_tag.replace(/[\s]+x$/, '');
-                         $('#' + id).removeTag(escape(last_tag));
-                         $(this).trigger('focus');
-                    };
-                });
-
-                $(data.fake_input).blur();
+                $.fn.tagsInput.configureInteractive(this, settings);
             }
-
-            return true;
         });
 
         return this;
+    };
+
+    $.fn.tagsInput.configureInteractive = function (obj, settings) {
+        var id = $(obj).attr('id');
+        var data = $.extend({
+            real_input: '#' + id,
+            holder: '#' + id + '_tagsinput',
+            input_wrapper: '#' + id + '_addTag',
+            fake_input: '#' + id + '_tag'
+        }, settings);
+
+        var markup = '<input id="' + id + '_tag" value="" data-default="' + settings.defaultText + '" />';
+        $(markup).appendTo($(data.input_wrapper));
+
+        $(data.fake_input).val($(data.fake_input).attr('data-default'));
+        $(data.fake_input).css('color', settings.placeholderColor);
+
+        $(data.holder).bind('click', data, function (event) {
+            $(event.data.fake_input).focus();
+        });
+
+        $(data.fake_input).bind('focus', data, function (event) {
+            if ($(event.data.fake_input).val() == $(event.data.fake_input).attr('data-default')) {
+                $(event.data.fake_input).val('');
+            }
+            $(event.data.fake_input).css('color', '#000000');
+        });
+
+        if (settings.autocomplete_url != undefined) {
+            autocomplete_options = {source: settings.autocomplete_url};
+            for (attrname in settings.autocomplete) {
+                autocomplete_options[attrname] = settings.autocomplete[attrname];
+            }
+
+            if ($.Autocompleter !== undefined) {
+                $(data.fake_input).autocomplete(settings.autocomplete_url, settings.autocomplete);
+                $(data.fake_input).bind('result', data, function (event, data, formatted) {
+                    if (data) {
+                        d = data + "";
+                        $(event.data.real_input).addTag(d,{focus:true,unique:(settings.unique)});
+                    }
+                });
+            }
+            else if ($.ui.autocomplete !== undefined) {
+                $(data.fake_input).autocomplete(autocomplete_options);
+                $(data.fake_input).bind('autocompleteselect', data, function (event, ui) {
+                    $(event.data.real_input).addTag(ui.item.value, {
+                        focus: true,
+                        unique: settings.unique
+                    });
+                    return false;
+                });
+            }
+        }
+        else {
+            // if a user tabs out of the field, create a new tag
+            // this is only available if autocomplete is not used.
+            $(data.fake_input).bind('blur', data, function (event) {
+                var d = $(this).attr('data-default');
+                if ($(event.data.fake_input).val() != '' && $(event.data.fake_input).val() != d) {
+                    if( (event.data.minChars <= $(event.data.fake_input).val().length) && (!event.data.maxChars || (event.data.maxChars >= $(event.data.fake_input).val().length)) ) {
+                        $(event.data.real_input).addTag($(event.data.fake_input).val(), {
+                            focus: true,
+                            unique: settings.unique
+                        });
+                    }
+                } else {
+                    $(event.data.fake_input).val($(event.data.fake_input).attr('data-default'));
+                    $(event.data.fake_input).css('color', settings.placeholderColor);
+                }
+                return false;
+            });
+        }
+
+        // if user types a comma, create a new tag
+        $(data.fake_input).bind('keypress', data, function (event) {
+            if (event.which == event.data.delimiter.charCodeAt(0) || event.which == 13 ) {
+                if( (event.data.minChars <= $(event.data.fake_input).val().length) && (!event.data.maxChars || (event.data.maxChars >= $(event.data.fake_input).val().length)) ) {
+                    $(event.data.real_input).addTag($(event.data.fake_input).val(), {
+                        focus: true,
+                        unique: settings.unique
+                    });
+                }
+                return false;
+            }
+        });
+
+        // Delete last tag on backspace
+        data.removeWithBackspace && $(data.fake_input).bind('keydown', function (event) {
+            if(event.keyCode == 8 && $(this).val() == '') {
+                 event.preventDefault();
+                 var last_tag = $(this).closest('.tagsinput').find('.tag:last').text();
+                 var id = $(this).attr('id').replace(/_tag$/, '');
+                 last_tag = last_tag.replace(/[\s]+x$/, '');
+                 $('#' + id).removeTag(escape(last_tag));
+                 $(this).trigger('focus');
+            };
+        });
+
+        $(data.fake_input).blur();
     };
 
     $.fn.tagsInput.updateTagsField = function (obj, tagslist) {
